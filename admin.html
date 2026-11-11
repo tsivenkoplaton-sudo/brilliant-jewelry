@@ -4,112 +4,411 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Админ-панель — BRILLIANT</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { background: #f4f4f4; color: #0a0a0a; font-family: 'Inter', sans-serif; margin: 0; padding: 50px 20px; }
-    .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-    h1 { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 36px; text-align: center; margin-top: 0; margin-bottom: 30px;}
-    .form-group { margin-bottom: 20px; }
-    label { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; color: #666; }
-    input { width: 100%; padding: 12px; border: 1px solid #ddd; font-family: inherit; font-size: 15px; box-sizing: border-box; outline: none; }
-    input:focus { border-color: #0a0a0a; }
-    button { width: 100%; padding: 15px; background: #0a0a0a; color: #fff; border: none; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; margin-top: 10px; }
-    button:hover { background: #333; }
-    #message { text-align: center; margin-top: 20px; font-size: 14px; }
-    .link { display: block; text-align: center; margin-top: 30px; color: #0a0a0a; text-decoration: none; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid #0a0a0a; width: fit-content; margin-inline: auto; padding-bottom: 2px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f4f4f4;
+      color: #0a0a0a;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      line-height: 1.6;
+      padding: 0;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; height: auto; }
+    .admin-header {
+      background: #0a0a0a;
+      color: #fff;
+      padding: 20px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .admin-header .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+    }
+    .admin-nav {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+    .admin-nav a {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #888;
+      padding: 8px 14px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+    .admin-nav a.active {
+      color: #0a0a0a;
+      background: #fff;
+      border-color: #0a0a0a;
+    }
+    .btn-logout {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #888;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s ease;
+    }
+    .btn-logout:hover { border-color: #fff; color: #fff; }
+    .admin-wrap {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 24px;
+    }
+    .page-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 36px;
+      font-weight: 300;
+      margin-bottom: 8px;
+      letter-spacing: 0.04em;
+    }
+    .page-subtitle {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: #666;
+      margin-bottom: 32px;
+    }
+    .alert {
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 24px;
+      display: none;
+    }
+    .alert.success { background: #eef7ee; color: #1b5e1b; border: 1px solid #b9dbb9; }
+    .alert.error { background: #fdeeee; color: #8a1f1f; border: 1px solid #dbb9b9; }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 32px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      margin-bottom: 32px;
+    }
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 400;
+      margin-bottom: 24px;
+      letter-spacing: 0.04em;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      max-width: 520px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #666;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ddd;
+      font-family: inherit;
+      font-size: 15px;
+      background: #fff;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #0a0a0a; }
+    textarea { resize: vertical; min-height: 90px; }
+    .btn-primary {
+      width: auto;
+      padding: 12px 28px;
+      background: #0a0a0a;
+      color: #fff;
+      border: none;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-family: inherit;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+    .btn-primary:hover { background: #222; }
+    .edit-row { display: none; background: #f9f9f9; }
+    .edit-row .form-grid { max-width: none; margin-bottom: 16px; }
+    .empty {
+      text-align: center;
+      padding: 60px 24px;
+      color: #888;
+    }
+    .empty p { font-size: 15px; margin-bottom: 16px; }
     .hidden { display: none !important; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
   </style>
 </head>
 <body>
-  <div class="container" id="loading-panel"><h1>Проверка прав...</h1></div>
+  <header class="admin-header">
+    <div class="logo">BRILLIANT &bull; Админ</div>
+    <nav class="admin-nav">
+      <a href="#" class="nav-link active" id="nav-add">Добавить товар</a>
+      <a href="#" class="nav-link" id="nav-list">Товары</a>
+      <button class="btn-logout" id="btn-logout">Выйти</button>
+    </nav>
+  </header>
+  <div class="admin-wrap">
+    <div id="alert-box" class="alert"></div>
+    <section id="section-add" class="card">
+      <div class="flex-between">
+        <div>
+          <div class="card-title">Добавить товар в коллекцию</div>
+          <div class="page-subtitle">Новое украшение</div>
+        </div>
+      </div>
+      <form id="product-form" class="form-grid">
+        <div class="form-group full">
+          <label>Название</label>
+          <input type="text" id="name" required placeholder="Например: Кольцо с бриллиантом">
+        </div>
+        <div class="form-group">
+          <label>Цена</label>
+          <input type="number" id="price" required min="0" step="0.01" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label>Ссылка на фото</label>
+          <input type="url" id="image_url" required placeholder="https://...jpg">
+        </div>
+        <div class="form-group full">
+          <label>Описание</label>
+          <textarea id="description" placeholder="Краткое описание украшения..."></textarea>
+        </div>
+        <button type="submit" id="submit-btn" class="btn-primary">Добавить в коллекцию</button>
+      </form>
+      <div id="add-message" style="margin-top:12px; font-size:13px;"></div>
+    </section>
 
-  <!-- ФОРМА ВХОДА (если разлогинен) -->
-  <div class="container hidden" id="login-panel">
-    <h1>Вход в админку</h1>
-    <div class="form-group"><label>Email</label><input type="email" id="login-email" required></div>
-    <div class="form-group"><label>Пароль</label><input type="password" id="login-password" required></div>
-    <button onclick="manualLogin()" id="login-btn">Войти</button>
-    <div id="login-msg" style="text-align: center; margin-top: 15px; font-size: 14px; color: red;"></div>
-    <a href="index.html" class="link">На главную</a>
+    <section id="section-list" class="card hidden">
+      <div class="flex-between">
+        <div>
+          <div class="card-title">Управление товарами</div>
+          <div class="page-subtitle">Все украшения коллекции</div>
+        </div>
+      </div>
+      <div id="list-message" style="margin-bottom:16px; font-size:13px;"></div>
+      <div class="table-wrap">
+        <table id="products-table">
+          <thead>
+            <tr>
+              <th style="width:80px;">Фото</th>
+              <th>Название</th>
+              <th style="width:140px;">Цена</th>
+              <th style="width:220px;">Действия</th>
+            </tr>
+          </thead>
+          <tbody id="products-tbody"></tbody>
+        </table>
+      </div>
+      <div id="empty-state" class="empty hidden">
+        <p>Товаров пока нет. Добавьте первый через вкладку «Добавить товар».</p>
+      </div>
+    </section>
   </div>
-
-  <!-- АДМИНКА (если вошел) -->
-  <div class="container hidden" id="admin-panel">
-    <h1>Добавить товар</h1>
-    <form id="product-form">
-      <div class="form-group"><label>Название</label><input type="text" id="name" required></div>
-      <div class="form-group"><label>Цена</label><input type="text" id="price" required></div>
-      <div class="form-group"><label>Ссылка на фото</label><input type="url" id="image_url" required></div>
-      <button type="submit" id="submit-btn">Добавить в коллекцию</button>
-      <div id="message"></div>
-    </form>
-    <a href="index.html" class="link">Вернуться на сайт</a>
-  </div>
-
   <script>
     const supabaseUrl = 'https://brilliant-proxy.ksy2003nova.workers.dev';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5a3hkeGhvZ25hd3Jkd3FjenpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwNzEwNzYsImV4cCI6MjEwOTY0NzA3Nn0.h3Ifaev9gkT_4EpYILBQspLpcMM-J5hBAz1FhAgk734'; 
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5a3hkeGhvZ25hd3Jkd3FjenpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwNzEwNzYsImV4cCI6MjEwOTY0NzA3Nn0.h3Ifaev9gkT_4EpYILBQspLpcMM-J5hBAz1FhAgk734';
     const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+    const alertBox = document.getElementById('alert-box');
+    const sectionAdd = document.getElementById('section-add');
+    const sectionList = document.getElementById('section-list');
+    const navAdd = document.getElementById('nav-add');
+    const navList = document.getElementById('nav-list');
+    const btnLogout = document.getElementById('btn-logout');
+    const productForm = document.getElementById('product-form');
+    const addMessage = document.getElementById('add-message');
+    const listMessage = document.getElementById('list-message');
+    const productsTbody = document.getElementById('products-tbody');
+    const emptyState = document.getElementById('empty-state');
+
+    function showAlert(text, type) {
+      type = type || 'success';
+      alertBox.textContent = text;
+      alertBox.className = 'alert ' + type;
+      alertBox.style.display = 'block';
+      setTimeout(function() { alertBox.style.display = 'none'; }, 5000);
+    }
+
+    function showAddMessage(text, isError) {
+      addMessage.textContent = text;
+      addMessage.style.color = isError ? '#8a1f1f' : '#1b5e1b';
+    }
+
     async function checkAuth() {
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      document.getElementById('loading-panel').classList.add('hidden');
-
-      if (user && user.app_metadata?.role === 'admin') {
-        document.getElementById('admin-panel').classList.remove('hidden');
-      } else {
-        document.getElementById('login-panel').classList.remove('hidden');
+      const { data: { user }, error } = await supabaseClient.auth.getUser();
+      if (error || !user) { window.location.href = 'index.html'; return; }
+      const role = user.user_metadata?.role;
+      if (role !== 'admin') {
+        showAlert('У вас нет прав доступа к админ-панели.', 'error');
+        setTimeout(function() { window.location.href = 'index.html'; }, 1500);
+        return;
       }
-    }
-    checkAuth();
-
-    async function manualLogin() {
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-      const msg = document.getElementById('login-msg');
-      const btn = document.getElementById('login-btn');
-
-      btn.textContent = "Загрузка...";
-      msg.textContent = "";
-
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      
-      if (error) {
-        msg.textContent = "Ошибка: " + error.message;
-        btn.textContent = "Войти";
-      } else if (data.user.app_metadata?.role !== 'admin') {
-        msg.textContent = "Вы не администратор!";
-        btn.textContent = "Войти";
-      } else {
-        document.getElementById('login-panel').classList.add('hidden');
-        document.getElementById('admin-panel').classList.remove('hidden');
-      }
+      loadProducts();
     }
 
-    document.getElementById('product-form').addEventListener('submit', async (e) => {
+    btnLogout.addEventListener('click', async function() {
+      await supabaseClient.auth.signOut();
+      window.location.href = 'index.html';
+    });
+
+    navAdd.addEventListener('click', function(e) {
       e.preventDefault();
-      const btn = document.getElementById('submit-btn');
-      const msg = document.getElementById('message');
-      btn.textContent = 'Загрузка...';
-      msg.textContent = '';
+      sectionAdd.classList.remove('hidden');
+      sectionList.classList.add('hidden');
+      navAdd.classList.add('active');
+      navList.classList.remove('active');
+    });
 
-      const { error } = await supabaseClient.from('products').insert([{ 
-        name: document.getElementById('name').value, 
-        price: document.getElementById('price').value, 
-        image_url: document.getElementById('image_url').value 
-      }]);
+    navList.addEventListener('click', function(e) {
+      e.preventDefault();
+      sectionAdd.classList.add('hidden');
+      sectionList.classList.remove('hidden');
+      navAdd.classList.remove('active');
+      navList.classList.add('active');
+      loadProducts();
+    });
 
-      if (error) {
-        msg.textContent = 'Ошибка: ' + error.message;
-        msg.style.color = 'red';
-      } else {
-        msg.textContent = 'Товар успешно добавлен!';
-        msg.style.color = 'green';
-        document.getElementById('product-form').reset();
+    async function loadProducts() {
+      productsTbody.innerHTML = '';
+      emptyState.classList.add('hidden');
+      listMessage.textContent = 'Загрузка...';
+      const { data: products, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+      if (error) { listMessage.textContent = 'Ошибка загрузки: ' + error.message; return; }
+      if (!products || products.length === 0) {
+        listMessage.textContent = '';
+        emptyState.classList.remove('hidden');
+        return;
       }
+      listMessage.textContent = 'Найдено товаров: ' + products.length;
+      products.forEach(function(product) {
+        var tr = document.createElement('tr');
+        var imgSrc = product.image_url || '';
+        var nameEsc = escapeHtml(product.name);
+        var descEsc = escapeHtml(product.description || '');
+        var imgEsc = escapeHtml(product.image_url || '');
+        tr.innerHTML =
+          '<td><img src="' + imgSrc + '" alt="thumb" class="thumb" onerror="this.src=\'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22><rect width=%2264%22 height=%2264%22 fill=%22%23f0f0f0%22/><text x=%2250%25%22 y=%2250%25%22 dy=%22.3em%22 font-size=%2210%22 fill=%22%23999%22 text-anchor=%22middle%22>no img</text></svg>\'"></td>' +
+          '<td><strong>' + nameEsc + '</strong></td>' +
+          '<td class="price">' + Number(product.price || 0).toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' }) + '</td>' +
+          '<td><div class="actions">' +
+          '<button class="btn-sm btn-edit" onclick="openEditForm(\'' + product.id + '\', \'' + nameEsc + '\', \'' + (product.price || 0) + '\', \'' + descEsc + '\', \'' + imgEsc + '\')">Редактировать</button>' +
+          '<button class="btn-sm btn-delete" onclick="deleteProduct(\'' + product.id + '\', \'' + nameEsc + '\')">Удалить</button>' +
+          '</div></td>';
+        productsTbody.appendChild(tr);
+      });
+    }
+    productForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Добавление...';
+      showAddMessage('');
+      var payload = {
+        name: document.getElementById('name').value.trim(),
+        price: parseFloat(document.getElementById('price').value) || 0,
+        image_url: document.getElementById('image_url').value.trim(),
+        description: document.getElementById('description').value.trim()
+      };
+      const { error } = await supabaseClient.from('products').insert([payload]);
+      if (error) {
+        showAddMessage('Ошибка: ' + error.message, true);
+      } else {
+        showAddMessage('Товар успешно добавлен!');
+        productForm.reset();
+      }
+      btn.disabled = false;
       btn.textContent = 'Добавить в коллекцию';
     });
+
+    window.editingId = null;
+    window.openEditForm = function(id, name, price, description, imageUrl) {
+      var prev = document.querySelector('.edit-row');
+      if (prev) prev.remove();
+      window.editingId = id;
+      var tr = document.createElement('tr');
+      tr.className = 'edit-row';
+      tr.innerHTML =
+        '<td colspan="4"><div class="card" style="padding:20px; margin:0;">' +
+        '<div class="form-grid">' +
+        '<div class="form-group full"><label>Название</label><input type="text" id="edit-name" value="' + escapeHtml(name) + '"></div>' +
+        '<div class="form-group"><label>Цена</label><input type="number" id="edit-price" value="' + price + '" min="0" step="0.01"></div>' +
+        '<div class="form-group full"><label>Ссылка на фото</label><input type="url" id="edit-image" value="' + escapeHtml(imageUrl) + '"></div>' +
+        '<div class="form-group full"><label>Описание</label><textarea id="edit-description">' + escapeHtml(description) + '</textarea></div>' +
+        '<div class="form-group full" style="display:flex; gap:12px; align-items:flex-end;">' +
+        '<button class="btn-primary" style="width:auto;" onclick="saveEdit(\'' + id + '\')">Сохранить</button>' +
+        '<button class="btn-sm" style="background:#fff;border:1px solid #ddd;" onclick="cancelEdit()">Отмена</button>' +
+        '</div><div id="edit-message" class="full" style="margin-top:10px; font-size:13px;"></div>' +
+        '</div></div></td>';
+      productsTbody.parentNode.insertBefore(tr, productsTbody.nextSibling);
+      tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+
+    window.saveEdit = async function(id) {
+      var msg = document.getElementById('edit-message');
+      msg.textContent = '';
+      var payload = {
+        name: document.getElementById('edit-name').value.trim(),
+        price: parseFloat(document.getElementById('edit-price').value) || 0,
+        image_url: document.getElementById('edit-image').value.trim(),
+        description: document.getElementById('edit-description').value.trim()
+      };
+      if (!payload.name) { msg.textContent = 'Укажите название'; msg.style.color = '#8a1f1f'; return; }
+      const { error } = await supabaseClient.from('products').update(payload).eq('id', id);
+      if (error) { msg.textContent = 'Ошибка: ' + error.message; msg.style.color = '#8a1f1f'; }
+      else { msg.textContent = 'Товар обновлён!'; msg.style.color = '#1b5e1b'; window.editingId = null; setTimeout(loadProducts, 800); }
+    };
+
+    window.cancelEdit = function() {
+      var row = document.querySelector('.edit-row');
+      if (row) row.remove();
+      window.editingId = null;
+    };
+
+    window.deleteProduct = async function(id, name) {
+      if (!confirm('Удалить товар "' + name + '"?')) return;
+      const { error } = await supabaseClient.from('products').delete().eq('id', id);
+      if (error) { showAlert('Ошибка удаления: ' + error.message, 'error'); }
+      else { loadProducts(); }
+    };
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    checkAuth();
   </script>
 </body>
 </html>
