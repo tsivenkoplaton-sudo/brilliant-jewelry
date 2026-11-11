@@ -1,0 +1,30 @@
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# IDE / editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Build / package
+node_modules/
+package-lock.json
+dist/
+build/
+
+# Large binary / installers (не коммитим в репозиторий)
+img/*.exe
+*.exe
+*.msi
+*.zip
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
