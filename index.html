@@ -447,6 +447,7 @@
     <a href="#collection">Коллекция</a>
     <a href="#about">О доме</a>
     <a href="#contact">Контакты</a>
+    <a href="admin.html" id="admin-link" style="display:none;">Админка</a>
   </div>
 </nav>
   <a href="#" class="logo">BRILLIANT</a>
@@ -659,14 +660,18 @@
     
     if (user) {
       console.log("Пользователь найден:", user.email);
-      console.log("ДАННЫЕ РОЛИ:", user.user_metadata); // Выведет объект с ролью
+      console.log("ДАННЫЕ РОЛИ:", user.user_metadata);
       
       const role = user.user_metadata?.role;
       
       if (role === 'admin') {
         console.log("✅ СТАТУС: АДМИНИСТРАТОР");
+        const adminLink = document.getElementById('admin-link');
+        if (adminLink) adminLink.style.display = 'inline-block';
+        authBtn.textContent = 'Админка';
       } else {
         console.log("❌ СТАТУС: ОБЫЧНЫЙ ПОЛЬЗОВАТЕЛЬ");
+        authBtn.textContent = 'Личный кабинет';
       }
     } else {
       console.log("Пользователь не авторизован");
@@ -681,20 +686,38 @@
 
       if(authBtn) {
     // Проверяем, вошел ли пользователь при загрузке страницы
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
-        authBtn.textContent = 'Выйти';
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const role = user?.user_metadata?.role;
+        if (role === 'admin') {
+          authBtn.textContent = 'Админка';
+          const adminLink = document.getElementById('admin-link');
+          if (adminLink) adminLink.style.display = 'inline-block';
+        } else {
+          authBtn.textContent = 'Личный кабинет';
+        }
       }
     });
 
     // Клик по кнопке
     authBtn.addEventListener('click', async () => {
+      const btnText = authBtn.textContent;
+      
+      // Если это админ и кнопка показывает "Админка" — переходим в админку
+      if (btnText === 'Админка') {
+        window.location.href = 'admin.html';
+        return;
+      }
+      
       const { data: { session } } = await supabaseClient.auth.getSession();
       
       if (session) {
         // Если вошел — выходим
         await supabaseClient.auth.signOut();
         authBtn.textContent = 'Войти';
+        const adminLink = document.getElementById('admin-link');
+        if (adminLink) adminLink.style.display = 'none';
         alert('Вы вышли из аккаунта');
       } else {
         // Если не вошел — открываем окно входа
@@ -750,9 +773,19 @@
         // Успешный вход
         authMsg.textContent = 'Вы вошли!';
         authMsg.style.color = 'green';
-        authBtn.textContent = 'Личный кабинет';
         authBtn.style.borderColor = '#888';
         setTimeout(() => { authModal.classList.remove('active'); }, 1500);
+
+        // Определяем роль и показываем админку, если пользователь админ
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const role = user?.user_metadata?.role;
+        if (role === 'admin') {
+          authBtn.textContent = 'Админка';
+          const adminLink = document.getElementById('admin-link');
+          if (adminLink) adminLink.style.display = 'inline-block';
+        } else {
+          authBtn.textContent = 'Личный кабинет';
+        }
       }
       submitBtn.textContent = 'Войти / Зарегистрироваться';
     });
