@@ -698,12 +698,14 @@
       const role = user.user_metadata?.role;
       if (role === 'admin') {
         authBtn.textContent = 'Добавить товар';
-        if (addProductLink) addProductLink.style.display = 'inline-block';
+        if (addProductLink) addProductLink.style.display = 'none'; // скрываем дубль
       } else {
         authBtn.textContent = 'Личный кабинет';
+        if (addProductLink) addProductLink.style.display = 'none';
       }
     } else {
       authBtn.textContent = 'Войти';
+      if (addProductLink) addProductLink.style.display = 'none';
     }
     loadProducts();
   }
@@ -787,9 +789,10 @@
         const role = user?.user_metadata?.role;
         if (role === 'admin') {
           authBtn.textContent = 'Добавить товар';
-          if (addProductLink) addProductLink.style.display = 'inline-block';
+          if (addProductLink) addProductLink.style.display = 'none';
         } else {
           authBtn.textContent = 'Личный кабинет';
+          if (addProductLink) addProductLink.style.display = 'none';
         }
       }
       submitBtn.textContent = 'Войти / Зарегистрироваться';
