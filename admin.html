@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Админ-панель — BRILLIANT</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script src="api.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -69,6 +70,161 @@
       transition: all 0.3s ease;
     }
     .btn-logout:hover { border-color: #fff; color: #fff; }
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-sm {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      border: 1px solid;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-edit {
+      background: #fff;
+      border-color: #0a0a0a;
+      color: #0a0a0a;
+    }
+    .btn-edit:hover {
+      background: #0a0a0a;
+      color: #fff;
+    }
+    .btn-delete {
+      background: #fff;
+      border-color: #e0e0e0;
+      color: #666;
+    }
+    .btn-delete:hover {
+      background: #fdeeee;
+      border-color: #8a1f1f;
+      color: #8a1f1f;
+    }
+    /* ===== КРАСИВЫЙ ФАЙЛ-ИНПУТ ===== */
+    .file-upload {
+      position: relative;
+      width: 100%;
+      border: 2px dashed #e0e0e0;
+      border-radius: 12px;
+      background: #fff;
+      padding: 30px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+    .file-upload:hover {
+      border-color: #0a0a0a;
+      background: #fafafa;
+      transform: translateY(-2px);
+    }
+    .file-upload.drag-over {
+      border-color: #0a0a0a;
+      background: #f0f0f0;
+    }
+    .file-upload input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+    .file-upload-label {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .file-upload-icon {
+      width: 48px;
+      height: 48px;
+      background: #f4f4f4;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #0a0a0a;
+    }
+    .file-upload-text {
+      font-size: 14px;
+      font-weight: 500;
+      color: #0a0a0a;
+      letter-spacing: 0.05em;
+    }
+    .file-upload-hint {
+      font-size: 11px;
+      color: #888;
+      letter-spacing: 0.03em;
+      margin-top: 4px;
+    }
+    .file-preview {
+      margin-top: 16px;
+      text-align: center;
+    }
+    .file-preview img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: none;
+    }
+    .file-name {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #666;
+      word-break: break-all;
+    }
+    .file-remove {
+      margin-top: 8px;
+      padding: 6px 14px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #8a1f1f;
+      border: 1px solid #8a1f1f;
+      background: transparent;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: none;
+    }
+    .file-remove:hover {
+      background: #8a1f1f;
+      color: #fff;
+    }
+    /* ===== КНОПКА СОХРАНЕНИЯ ===== */
+    .btn-primary {
+      background: #0a0a0a;
+      color: #fff;
+      border: 1px solid #0a0a0a;
+      padding: 10px 24px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-primary:hover {
+      background: transparent;
+      color: #0a0a0a;
+    }
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
     .admin-wrap {
       max-width: 1200px;
       margin: 40px auto;
@@ -172,9 +328,9 @@
   <header class="admin-header">
     <div class="logo">BRILLIANT &bull; Админ</div>
     <nav class="admin-nav">
+      <a href="/" class="nav-link">Назад в магазин</a>
       <a href="#" class="nav-link active" id="nav-add">Добавить товар</a>
       <a href="#" class="nav-link" id="nav-list">Товары</a>
-      <button class="btn-logout" id="btn-logout">Выйти</button>
     </nav>
   </header>
   <div class="admin-wrap">
@@ -196,8 +352,20 @@
           <input type="number" id="price" required min="0" step="0.01" placeholder="0.00">
         </div>
         <div class="form-group">
-          <label>Ссылка на фото</label>
-          <input type="url" id="image_url" required placeholder="https://...jpg">
+          <label>Фото товара</label>
+          <div class="file-upload" id="add-file-upload">
+            <input type="file" id="image_file" accept="image/*" onchange="handleFileSelect(this, 'add')">
+            <div class="file-upload-label">
+              <div class="file-upload-icon">📷</div>
+              <div class="file-upload-text">Выберите файл</div>
+              <div class="file-upload-hint">JPG, PNG, WEBP (до 5 МБ)</div>
+            </div>
+            <div class="file-preview" id="add-file-preview">
+              <img id="add-preview-img" alt="Preview">
+              <div class="file-name" id="add-file-name"></div>
+              <button type="button" class="file-remove" id="add-file-remove" onclick="removeFile('add')">Удалить</button>
+            </div>
+          </div>
         </div>
         <div class="form-group full">
           <label>Описание</label>
@@ -235,16 +403,11 @@
     </section>
   </div>
   <script>
-    const supabaseUrl = 'https://wykxdxhognawrdwqczzd.supabase.co';
-    const supabaseKey = 'sb_publishable_S3o1RnQ8U3ASpBvKw--LEw_DXs4-qc1';
-    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-
     const alertBox = document.getElementById('alert-box');
     const sectionAdd = document.getElementById('section-add');
     const sectionList = document.getElementById('section-list');
     const navAdd = document.getElementById('nav-add');
     const navList = document.getElementById('nav-list');
-    const btnLogout = document.getElementById('btn-logout');
     const productForm = document.getElementById('product-form');
     const addMessage = document.getElementById('add-message');
     const listMessage = document.getElementById('list-message');
@@ -264,22 +427,34 @@
       addMessage.style.color = isError ? '#8a1f1f' : '#1b5e1b';
     }
 
-    async function checkAuth() {
-      const { data: { user }, error } = await supabaseClient.auth.getUser();
-      if (error || !user) { window.location.href = 'index.html'; return; }
-      const role = user.user_metadata?.role;
-      if (role !== 'admin') {
-        showAlert('У вас нет прав доступа к админ-панели.', 'error');
-        setTimeout(function() { window.location.href = 'index.html'; }, 1500);
+    function checkAuth() {
+      const token = localStorage.getItem('admin_token');
+      const role = localStorage.getItem('admin_role');
+      if (!token || role !== 'admin') {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        localStorage.removeItem('admin_role');
+        window.location.href = 'index.html';
         return;
       }
       loadProducts();
     }
 
-    btnLogout.addEventListener('click', async function() {
-      await supabaseClient.auth.signOut();
-      window.location.href = 'index.html';
-    });
+    function handleAuthError(err) {
+      if (err && err.status === 403) {
+        showAlert('Доступ запрещен: нужны права администратора. Пожалуйста, войдите как администратор.', 'error');
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        localStorage.removeItem('admin_role');
+        setTimeout(function() { window.location.href = 'index.html'; }, 1500);
+      } else if (err && err.status === 401) {
+        showAlert('Сессия истекла. Пожалуйста, войдите снова.', 'error');
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        localStorage.removeItem('admin_role');
+        setTimeout(function() { window.location.href = 'index.html'; }, 1500);
+      }
+    }
 
     navAdd.addEventListener('click', function(e) {
       e.preventDefault();
@@ -302,15 +477,15 @@
       productsTbody.innerHTML = '';
       emptyState.classList.add('hidden');
       listMessage.textContent = 'Загрузка...';
-      const { data: products, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
-      if (error) { listMessage.textContent = 'Ошибка загрузки: ' + error.message; return; }
-      if (!products || products.length === 0) {
-        listMessage.textContent = '';
-        emptyState.classList.remove('hidden');
-        return;
-      }
-      listMessage.textContent = 'Найдено товаров: ' + products.length;
-      products.forEach(function(product) {
+      try {
+        const products = await adminGetProducts();
+        if (!products || products.length === 0) {
+          listMessage.textContent = '';
+          emptyState.classList.remove('hidden');
+          return;
+        }
+        listMessage.textContent = 'Найдено товаров: ' + products.length;
+        products.forEach(function(product) {
         var tr = document.createElement('tr');
         var imgSrc = product.image_url || '';
         var nameEsc = escapeHtml(product.name);
@@ -321,11 +496,18 @@
           '<td><strong>' + nameEsc + '</strong></td>' +
           '<td class="price">' + Number(product.price || 0).toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' }) + '</td>' +
           '<td><div class="actions">' +
-          '<button class="btn-sm btn-edit" onclick="openEditForm(\'' + product.id + '\', \'' + nameEsc + '\', \'' + (product.price || 0) + '\', \'' + descEsc + '\', \'' + imgEsc + '\')">Редактировать</button>' +
-          '<button class="btn-sm btn-delete" onclick="deleteProduct(\'' + product.id + '\', \'' + nameEsc + '\')">Удалить</button>' +
+          '<button class="btn-sm btn-delete" data-id="' + product.id + '" data-name="' + nameEsc + '">Удалить</button>' +
           '</div></td>';
         productsTbody.appendChild(tr);
       });
+      
+      } catch (err) {
+        if (err.status === 403 || err.status === 401) {
+          handleAuthError(err);
+          return;
+        }
+        listMessage.textContent = 'Ошибка загрузки: ' + err.message;
+      }
     }
     productForm.addEventListener('submit', async function(e) {
       e.preventDefault();
@@ -333,22 +515,107 @@
       btn.disabled = true;
       btn.textContent = 'Добавление...';
       showAddMessage('');
-      var payload = {
-        name: document.getElementById('name').value.trim(),
-        price: parseFloat(document.getElementById('price').value) || 0,
-        image_url: document.getElementById('image_url').value.trim(),
-        description: document.getElementById('description').value.trim()
-      };
-      const { error } = await supabaseClient.from('products').insert([payload]);
-      if (error) {
-        showAddMessage('Ошибка: ' + error.message, true);
-      } else {
+      
+      // Создаём FormData для отправки файла
+      var formData = new FormData();
+      formData.append('name', document.getElementById('name').value.trim());
+      formData.append('price', parseFloat(document.getElementById('price').value) || 0);
+      formData.append('description', document.getElementById('description').value.trim());
+      var fileInput = document.getElementById('image_file');
+      if (fileInput.files && fileInput.files[0]) {
+        formData.append('image', fileInput.files[0]);
+      }
+      
+      var token = localStorage.getItem('admin_token');
+      try {
+        const response = await fetch('/api/admin/products', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + token
+          },
+          body: formData
+        });
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Ошибка сервера ' + response.status);
+        }
+        const result = await response.json();
         showAddMessage('Товар успешно добавлен!');
         productForm.reset();
+      } catch (err) {
+        if (err.status === 403 || err.status === 401 || err.message && err.message.includes('403')) {
+          handleAuthError(err);
+          return;
+        }
+        showAddMessage('Ошибка: ' + err.message, true);
       }
       btn.disabled = false;
       btn.textContent = 'Добавить в коллекцию';
     });
+
+    // ===== ФУНКЦИИ ПРЕВЬЮ ФАЙЛОВ =====
+    window.handleFileSelect = function(input, type) {
+      var prefix = type === 'add' ? 'add' : 'edit';
+      var file = input.files[0];
+      var preview = document.getElementById(prefix + '-preview-img');
+      var nameEl = document.getElementById(prefix + '-file-name');
+      var previewBox = document.getElementById(prefix + '-file-preview');
+      var removeBtn = document.getElementById(prefix + '-file-remove');
+
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          alert('Файл слишком большой (макс. 5 МБ)');
+          input.value = '';
+          return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+        nameEl.textContent = file.name;
+        previewBox.style.display = 'block';
+        removeBtn.style.display = 'inline-block';
+      }
+    };
+
+    window.removeFile = function(type) {
+      var prefix = type === 'add' ? 'add' : 'edit';
+      var input = document.getElementById(prefix === 'add' ? 'image_file' : 'edit-image');
+      var preview = document.getElementById(prefix + '-preview-img');
+      var nameEl = document.getElementById(prefix + '-file-name');
+      var previewBox = document.getElementById(prefix + '-file-preview');
+      var removeBtn = document.getElementById(prefix + '-file-remove');
+
+      input.value = '';
+      preview.src = '';
+      preview.style.display = 'none';
+      nameEl.textContent = '';
+      previewBox.style.display = 'none';
+      removeBtn.style.display = 'none';
+    };
+
+    // Drag & drop визуальный фидбек
+    var addUpload = document.getElementById('add-file-upload');
+    if (addUpload) {
+      addUpload.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        addUpload.classList.add('drag-over');
+      });
+      addUpload.addEventListener('dragleave', function() {
+        addUpload.classList.remove('drag-over');
+      });
+      addUpload.addEventListener('drop', function(e) {
+        e.preventDefault();
+        addUpload.classList.remove('drag-over');
+        var files = e.dataTransfer.files;
+        if (files.length) {
+          document.getElementById('image_file').files = files;
+          handleFileSelect(document.getElementById('image_file'), 'add');
+        }
+      });
+    }
 
     window.editingId = null;
     window.openEditForm = function(id, name, price, description, imageUrl) {
@@ -362,30 +629,63 @@
         '<div class="form-grid">' +
         '<div class="form-group full"><label>Название</label><input type="text" id="edit-name" value="' + escapeHtml(name) + '"></div>' +
         '<div class="form-group"><label>Цена</label><input type="number" id="edit-price" value="' + price + '" min="0" step="0.01"></div>' +
-        '<div class="form-group full"><label>Ссылка на фото</label><input type="url" id="edit-image" value="' + escapeHtml(imageUrl) + '"></div>' +
+        '<div class="form-group full"><label>Фото товара</label><div class="file-upload" id="edit-file-upload"><input type="file" id="edit-image" accept="image/*" onchange="handleFileSelect(this, \'edit\')"><div class="file-upload-label"><div class="file-upload-icon">📷</div><div class="file-upload-text">Выберите файл</div><div class="file-upload-hint">Оставить пустым, чтобы не менять фото</div></div><div class="file-preview" id="edit-file-preview"><img id="edit-preview-img" alt="Preview"><div class="file-name" id="edit-file-name"></div><button type="button" class="file-remove" id="edit-file-remove" onclick="removeFile(\'edit\')">Удалить</button></div></div></div>' +
         '<div class="form-group full"><label>Описание</label><textarea id="edit-description">' + escapeHtml(description) + '</textarea></div>' +
         '<div class="form-group full" style="display:flex; gap:12px; align-items:flex-end;">' +
-        '<button class="btn-primary" style="width:auto;" onclick="saveEdit(\'' + id + '\')">Сохранить</button>' +
-        '<button class="btn-sm" style="background:#fff;border:1px solid #ddd;" onclick="cancelEdit()">Отмена</button>' +
+        '<button class="btn-primary" style="width:auto;" data-id="' + id + '">Сохранить</button>' +
+        '<button class="btn-sm btn-cancel-edit" style="background:#fff;border:1px solid #ddd;">Отмена</button>' +
         '</div><div id="edit-message" class="full" style="margin-top:10px; font-size:13px;"></div>' +
         '</div></div></td>';
       productsTbody.parentNode.insertBefore(tr, productsTbody.nextSibling);
       tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      
+      // Навешиваем обработчики на кнопки редактирования
+      var saveBtn = tr.querySelector('.btn-primary');
+      var cancelBtn = tr.querySelector('.btn-cancel-edit');
+      saveBtn.addEventListener('click', function() { saveEdit(id); });
+      cancelBtn.addEventListener('click', cancelEdit);
     };
 
     window.saveEdit = async function(id) {
       var msg = document.getElementById('edit-message');
       msg.textContent = '';
-      var payload = {
-        name: document.getElementById('edit-name').value.trim(),
-        price: parseFloat(document.getElementById('edit-price').value) || 0,
-        image_url: document.getElementById('edit-image').value.trim(),
-        description: document.getElementById('edit-description').value.trim()
-      };
-      if (!payload.name) { msg.textContent = 'Укажите название'; msg.style.color = '#8a1f1f'; return; }
-      const { error } = await supabaseClient.from('products').update(payload).eq('id', id);
-      if (error) { msg.textContent = 'Ошибка: ' + error.message; msg.style.color = '#8a1f1f'; }
-      else { msg.textContent = 'Товар обновлён!'; msg.style.color = '#1b5e1b'; window.editingId = null; setTimeout(loadProducts, 800); }
+      
+      var formData = new FormData();
+      formData.append('name', document.getElementById('edit-name').value.trim());
+      formData.append('price', parseFloat(document.getElementById('edit-price').value) || 0);
+      formData.append('description', document.getElementById('edit-description').value.trim());
+      var fileInput = document.getElementById('edit-image');
+      if (fileInput.files && fileInput.files[0]) {
+        formData.append('image', fileInput.files[0]);
+      }
+      
+      if (!formData.get('name')) { msg.textContent = 'Укажите название'; msg.style.color = '#8a1f1f'; return; }
+      
+      var token = localStorage.getItem('admin_token');
+      try {
+        const response = await fetch('/api/admin/products/' + id, {
+          method: 'PUT',
+          headers: {
+            'Authorization': 'Bearer ' + token
+          },
+          body: formData
+        });
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Ошибка сервера ' + response.status);
+        }
+        msg.textContent = 'Товар обновлён!';
+        msg.style.color = '#1b5e1b';
+        window.editingId = null;
+        setTimeout(loadProducts, 800);
+      } catch (err) {
+        if (err.status === 403 || err.status === 401 || err.message && err.message.includes('403')) {
+          handleAuthError(err);
+          return;
+        }
+        msg.textContent = 'Ошибка: ' + err.message;
+        msg.style.color = '#8a1f1f';
+      }
     };
 
     window.cancelEdit = function() {
@@ -396,9 +696,16 @@
 
     window.deleteProduct = async function(id, name) {
       if (!confirm('Удалить товар "' + name + '"?')) return;
-      const { error } = await supabaseClient.from('products').delete().eq('id', id);
-      if (error) { showAlert('Ошибка удаления: ' + error.message, 'error'); }
-      else { loadProducts(); }
+      try {
+        await adminDeleteProduct(id);
+        loadProducts();
+      } catch (err) {
+        if (err.status === 403 || err.status === 401) {
+          handleAuthError(err);
+          return;
+        }
+        showAlert('Ошибка удаления: ' + err.message, 'error');
+      }
     };
 
     function escapeHtml(text) {
@@ -408,7 +715,31 @@
       return div.innerHTML;
     }
 
+    // Event delegation для кнопок таблицы товаров (добавляется один раз при инициализации)
+    productsTbody.addEventListener('click', function(e) {
+      try {
+        var editBtn = e.target.closest('.btn-edit');
+        var deleteBtn = e.target.closest('.btn-delete');
+        if (editBtn) {
+          window.openEditForm(
+            editBtn.getAttribute('data-id'),
+            editBtn.getAttribute('data-name'),
+            editBtn.getAttribute('data-price'),
+            editBtn.getAttribute('data-description'),
+            editBtn.getAttribute('data-image')
+          );
+        }
+        if (deleteBtn) {
+          window.deleteProduct(deleteBtn.getAttribute('data-id'), deleteBtn.getAttribute('data-name'));
+        }
+      } catch (err) {
+        console.error('Ошибка клика по кнопке:', err);
+        showAlert('Ошибка: ' + err.message, 'error');
+      }
+    });
+
     checkAuth();
   </script>
 </body>
 </html>
+
